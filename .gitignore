@@ -53,3 +53,9 @@ dkms.conf
 
 # Exécutable de l'interpréteur (TP3-TP5)
 interpreteur/interpreteur
+
+# Répertoires de compilation locaux
+build/
+tests/run_tests
+TP1/bin/
+TP2/bin/
