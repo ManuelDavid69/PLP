@@ -1,7 +1,13 @@
-#include <math.h>
+/*
+ * surface.c — Exercice 2.3
+ * Calcul de la surface d'une sphère : 4 × π × r².
+ */
+
 #include "sphere.h"
 
-// Fonction pour calculer la surface d'une sphère
-float calculer_surface(float rayon) {
-    return 4 * M_PI * pow(rayon, 2);
+#define PI 3.14159265358979323846
+
+float calculer_surface(float rayon)
+{
+    return (float)(4.0 * PI * rayon * rayon);
 }
