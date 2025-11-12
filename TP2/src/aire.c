@@ -1,20 +1,22 @@
-// Directive de préprocesseur pour inclure la bibliothèque mathématique
-#include <math.h>  // Pour utiliser la constante M_PI
+/*
+ * aire.c — Exercice 2.2
+ * Illustre la chaîne de compilation : une fonction, un appel et un affichage.
+ */
 
-#include <stdio.h> 
+#include <stdio.h>
 
-// Fonction pour calculer l'aire d'un cercle
-float calculer_aire(float rayon) {  
-    // Utilisation de la constante pi de la bibliothèque mathématique
-    return M_PI * rayon * rayon;
+#define PI 3.14159265358979323846
+
+static float calculer_aire(float rayon)
+{
+    return (float)(PI * rayon * rayon);
 }
 
-// Point d'entrée du programme
-int main() {
-    float rayon = 5.0;
+int main(void)
+{
+    float rayon = 5.0f;
     float aire = calculer_aire(rayon);
-    // Affichage du résultat
-    printf("L'aire du cercle de rayon %.2f est %.2f\n", rayon, aire);
+
+    printf("L'aire du cercle de rayon %.2f est %.2f\n", (double)rayon, (double)aire);
     return 0;
 }
-
