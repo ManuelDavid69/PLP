@@ -1,0 +1,5 @@
+Bonjour le monde.
+Bonjour à tous les étudiants.
+La programmation en C est amusante.
+Bonjour, bonjour !
+Un fichier de test pour l'exercice 2.6.
