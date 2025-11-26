@@ -1,60 +1,171 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 /**
- * Programme qui simule un interpréteur de commandes simple.
- * Il lit les commandes utilisateur et les traite en fonction de leur contenu.
+ * Interpréteur de commandes — TP3.
+ *
+ * Ce premier niveau gère les commandes de base (echo, help/aide, version,
+ * date, quit/quitter) et la lecture de la ligne de commande. Les expressions
+ * arithmétiques seront ajoutées dans les exercices suivants.
  */
 
-int main()
+static int programme_en_cours = 1;
+
+static int egales_sans_casse(const char *gauche, const char *droite)
 {
-    int continuer = 1; // Variable pour contrôler la boucle principale
+    while (*gauche != '\0' && *droite != '\0') {
+        if (tolower((unsigned char)*gauche) != tolower((unsigned char)*droite)) {
+            return 0;
+        }
+        gauche++;
+        droite++;
+    }
+    return *gauche == '\0' && *droite == '\0';
+}
 
-    // Boucle principale qui lit et traite les commandes utilisateur
-    while (continuer)
-    {
-        printf("> "); // Affiche le prompt de commande
+static void supprimer_espaces_extremes(char *texte)
+{
+    char *debut = texte;
+    while (*debut != '\0' && isspace((unsigned char)*debut)) {
+        debut++;
+    }
 
-        // Buffer pour stocker la commande utilisateur
-        char commande[1024];
+    if (*debut == '\0') {
+        texte[0] = '\0';
+        return;
+    }
 
-        // Lit la commande utilisateur et la stocke dans le buffer
-        // (fin de fichier, par exemple Ctrl-D : on quitte la boucle)
-        if (fgets(commande, sizeof(commande), stdin) == NULL)
-        {
+    char *fin = debut + strlen(debut) - 1;
+    while (fin > debut && isspace((unsigned char)*fin)) {
+        *fin = '\0';
+        fin--;
+    }
+
+    memmove(texte, debut, strlen(debut) + 1);
+}
+
+static void traiter_echo(const char *arguments)
+{
+    if (arguments == NULL) {
+        arguments = "";
+    }
+    printf("Echo: %s\n", arguments);
+}
+
+static void afficher_version(const char *arguments)
+{
+    (void)arguments;
+    printf("Interpréteur PLP - version 1.0\n");
+}
+
+static void afficher_aide(const char *arguments)
+{
+    (void)arguments;
+    printf("Commandes disponibles :\n");
+    printf("  echo <texte>      affiche le texte fourni\n");
+    printf("  date              affiche la date et l'heure courantes\n");
+    printf("  version           affiche la version de l'interpréteur\n");
+    printf("  help / aide       affiche cette aide\n");
+    printf("  quit / quitter    quitte l'interpréteur\n");
+}
+
+static void traiter_date(const char *arguments)
+{
+    (void)arguments;
+
+    time_t maintenant = time(NULL);
+    struct tm *local = localtime(&maintenant);
+
+    if (local == NULL) {
+        printf("Erreur : impossible de lire la date courante.\n");
+        return;
+    }
+
+    printf("Date actuelle : %02d/%02d/%04d %02d:%02d:%02d\n",
+           local->tm_mday,
+           local->tm_mon + 1,
+           local->tm_year + 1900,
+           local->tm_hour,
+           local->tm_min,
+           local->tm_sec);
+}
+
+static void traiter_quit(const char *arguments)
+{
+    (void)arguments;
+    printf("Arrêt...\n");
+    programme_en_cours = 0;
+}
+
+struct Commande {
+    const char *nom;
+    void (*fonction)(const char *arguments);
+};
+
+static const struct Commande COMMANDES[] = {
+    {"echo", traiter_echo},
+    {"help", afficher_aide},
+    {"aide", afficher_aide},
+    {"version", afficher_version},
+    {"date", traiter_date},
+    {"quit", traiter_quit},
+    {"quitter", traiter_quit}
+};
+
+static const size_t NB_COMMANDES = sizeof(COMMANDES) / sizeof(COMMANDES[0]);
+
+static void interpreter_ligne(const char *ligne)
+{
+    char copie[1024];
+    snprintf(copie, sizeof copie, "%s", ligne);
+    supprimer_espaces_extremes(copie);
+
+    if (copie[0] == '\0') {
+        return;
+    }
+
+    char commande[128];
+    size_t i = 0;
+    const char *curseur = copie;
+
+    while (*curseur != '\0' && !isspace((unsigned char)*curseur) && i + 1 < sizeof commande) {
+        commande[i++] = *curseur++;
+    }
+    commande[i] = '\0';
+
+    while (*curseur != '\0' && isspace((unsigned char)*curseur)) {
+        curseur++;
+    }
+
+    for (size_t c = 0; c < NB_COMMANDES; c++) {
+        if (egales_sans_casse(commande, COMMANDES[c].nom)) {
+            COMMANDES[c].fonction(curseur);
+            return;
+        }
+    }
+
+    printf("Commande non reconnue. Tapez 'help' ou 'aide' pour la liste des commandes.\n");
+}
+
+int main(void)
+{
+    printf("Interpréteur PLP 1.0 — tapez 'help' ou 'aide'.\n");
+
+    while (programme_en_cours) {
+        printf("> ");
+        fflush(stdout);
+
+        char ligne[1024];
+        if (fgets(ligne, sizeof ligne, stdin) == NULL) {
             printf("\n");
             break;
         }
 
-        // Enlève le caractère de fin de ligne ajouté par fgets
-        commande[strcspn(commande, "\n")] = 0;
-
-        // Traite la commande en fonction de son contenu
-        if (strcmp(commande, "quit") == 0)
-        {
-            // Quitte le programme si la commande est "quit"
-            printf("Arrêt...\n");
-            continuer = 0;
-        }
-        else if (strncmp(commande, "echo ", 5) == 0)
-        {
-            // Traite la commande "echo" pour afficher du texte
-            printf("Echo: ");
-
-            // Imprime la chaîne
-            for (int i = 5; commande[i] != '\0'; i++)
-            {
-                printf("%c", commande[i]);
-            }
-            printf("\n"); // Saut de ligne après la sortie
-        }
-        else
-        {
-            // Affiche un message d'erreur si la commande est inconnue
-            printf("Commande non reconnue. Essayez 'echo <text>' pour afficher du texte, ou tapez 'quit' pour quitter.\n");
-        }
-
-        printf("\n"); // Saut de ligne après la sortie
+        ligne[strcspn(ligne, "\r\n")] = '\0';
+        interpreter_ligne(ligne);
+        printf("\n");
     }
 
     return 0;
