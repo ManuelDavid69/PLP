@@ -3,12 +3,15 @@
 #include <string.h>
 #include <time.h>
 
+#include "evaluation.h"
+#include "lexer.h"
+#include "parseur.h"
+
 /**
  * Interpréteur de commandes — TP3.
  *
  * Ce premier niveau gère les commandes de base (echo, help/aide, version,
- * date, quit/quitter) et la lecture de la ligne de commande. Les expressions
- * arithmétiques seront ajoutées dans les exercices suivants.
+ * date, quit/quitter), puis les expressions arithmétiques simples « A op B ».
  */
 
 static int programme_en_cours = 1;
@@ -69,6 +72,7 @@ static void afficher_aide(const char *arguments)
     printf("  version           affiche la version de l'interpréteur\n");
     printf("  help / aide       affiche cette aide\n");
     printf("  quit / quitter    quitte l'interpréteur\n");
+    printf("  <A op B>          évalue une expression simple, par exemple 2 + 3\n");
 }
 
 static void traiter_date(const char *arguments)
@@ -116,6 +120,34 @@ static const struct Commande COMMANDES[] = {
 
 static const size_t NB_COMMANDES = sizeof(COMMANDES) / sizeof(COMMANDES[0]);
 
+static int ressemble_a_expression(const char *texte)
+{
+    int contient_un_chiffre = 0;
+
+    for (const char *curseur = texte; *curseur != '\0'; curseur++) {
+        if (isspace((unsigned char)*curseur)) {
+            continue;
+        }
+        if (isdigit((unsigned char)*curseur)) {
+            contient_un_chiffre = 1;
+        } else if (strchr("+-*/().", *curseur) == NULL) {
+            return 0;
+        }
+    }
+
+    return contient_un_chiffre;
+}
+
+static void afficher_nombre(double valeur)
+{
+    if (valeur >= -9007199254740992.0 && valeur <= 9007199254740992.0 &&
+        valeur == (double)(long long)valeur) {
+        printf("%lld\n", (long long)valeur);
+    } else {
+        printf("%.10g\n", valeur);
+    }
+}
+
 static void interpreter_ligne(const char *ligne)
 {
     char copie[1024];
@@ -144,6 +176,20 @@ static void interpreter_ligne(const char *ligne)
             COMMANDES[c].fonction(curseur);
             return;
         }
+    }
+
+    if (ressemble_a_expression(copie)) {
+        Lexer lexer;
+        lexer_init(&lexer, copie);
+
+        Expression expression;
+        if (parse_expression(&lexer, &expression)) {
+            double resultat;
+            if (evaluer_expression(&expression, &resultat)) {
+                afficher_nombre(resultat);
+            }
+        }
+        return;
     }
 
     printf("Commande non reconnue. Tapez 'help' ou 'aide' pour la liste des commandes.\n");
