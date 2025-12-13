@@ -2,7 +2,10 @@
 
 #include "lexer.h"
 
+#include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define TAILLE_PILE 256
@@ -214,4 +217,136 @@ int infix_to_postfix(const char *infixe, char *postfixe, size_t taille)
     }
 
     return 1;
+}
+
+int eval_postfix(const char *postfixe, double *resultat)
+{
+    double pile[TAILLE_PILE];
+    int sommet = -1;
+    const char *curseur = postfixe;
+
+    if (postfixe == NULL || resultat == NULL) {
+        return 0;
+    }
+
+    while (*curseur != '\0') {
+        while (isspace((unsigned char)*curseur)) {
+            curseur++;
+        }
+        if (*curseur == '\0') {
+            break;
+        }
+
+        if (isdigit((unsigned char)*curseur) ||
+            (*curseur == '.' && isdigit((unsigned char)curseur[1]))) {
+            errno = 0;
+            char *fin = NULL;
+            const double valeur = strtod(curseur, &fin);
+
+            if (fin == curseur || errno == ERANGE) {
+                fprintf(stderr, "Erreur : opérande invalide dans l'expression postfixée.\n");
+                return 0;
+            }
+            if (sommet + 1 >= TAILLE_PILE) {
+                fprintf(stderr, "Erreur : pile d'opérandes saturée.\n");
+                return 0;
+            }
+
+            pile[++sommet] = valeur;
+            curseur = fin;
+            continue;
+        }
+
+        if (*curseur == 'u') {
+            if (sommet < 0) {
+                fprintf(stderr, "Erreur : moins unaire sans opérande.\n");
+                return 0;
+            }
+            pile[sommet] = -pile[sommet];
+            curseur++;
+            continue;
+        }
+
+        if (strchr("+-*/", *curseur) != NULL) {
+            if (sommet < 1) {
+                fprintf(stderr, "Erreur : pas assez d'opérandes pour '%c'.\n", *curseur);
+                return 0;
+            }
+
+            const double droite = pile[sommet--];
+            const double gauche = pile[sommet];
+
+            switch (*curseur) {
+            case '+':
+                pile[sommet] = gauche + droite;
+                break;
+            case '-':
+                pile[sommet] = gauche - droite;
+                break;
+            case '*':
+                pile[sommet] = gauche * droite;
+                break;
+            case '/':
+                if (droite == 0.0) {
+                    fprintf(stderr, "Erreur : division par zéro.\n");
+                    return 0;
+                }
+                pile[sommet] = gauche / droite;
+                break;
+            default:
+                return 0;
+            }
+
+            curseur++;
+            continue;
+        }
+
+        fprintf(stderr, "Erreur : jeton invalide dans l'expression postfixée.\n");
+        return 0;
+    }
+
+    if (sommet != 0) {
+        fprintf(stderr, "Erreur : expression postfixée incomplète.\n");
+        return 0;
+    }
+
+    *resultat = pile[sommet];
+    return 1;
+}
+
+int evaluate_infix(const char *infixe, double *resultat)
+{
+    char postfixe[1024];
+
+    if (!infix_to_postfix(infixe, postfixe, sizeof postfixe)) {
+        return 0;
+    }
+
+    return eval_postfix(postfixe, resultat);
+}
+
+int is_arithmetic_expression(const char *ligne)
+{
+    int contient_un_chiffre = 0;
+    int contient_un_caractere = 0;
+
+    if (ligne == NULL) {
+        return 0;
+    }
+
+    for (const char *curseur = ligne; *curseur != '\0'; curseur++) {
+        if (isspace((unsigned char)*curseur)) {
+            continue;
+        }
+
+        contient_un_caractere = 1;
+
+        if (isdigit((unsigned char)*curseur)) {
+            contient_un_chiffre = 1;
+        } else if (strchr("+-*/().", *curseur) == NULL) {
+            return 0;
+        }
+    }
+
+    return contient_un_caractere && contient_un_chiffre;
 }
