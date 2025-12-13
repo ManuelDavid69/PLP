@@ -50,6 +50,8 @@ static int priorite(char operation)
     case '*':
     case '/':
         return 2;
+    case 'u': /* moins unaire */
+        return 3;
     default:
         return 0;
     }
@@ -106,15 +108,69 @@ int infix_to_postfix(const char *infixe, char *postfixe, size_t taille)
             continue;
         }
 
+        if (jeton.type == TOKEN_LPAREN) {
+            if (!attend_operande) {
+                fprintf(stderr, "Erreur : un opérateur est attendu avant '('.\n");
+                return 0;
+            }
+            if (!pile_pousser(&pile, '(')) {
+                fprintf(stderr, "Erreur : pile d'opérateurs saturée.\n");
+                return 0;
+            }
+            attend_operande = 1;
+            continue;
+        }
+
+        if (jeton.type == TOKEN_RPAREN) {
+            if (attend_operande) {
+                fprintf(stderr, "Erreur : parenthèse fermante mal placée.\n");
+                return 0;
+            }
+
+            while (!pile_vide(&pile) && pile_sommet(&pile) != '(') {
+                const char sommet = pile_depiler(&pile);
+                char texte[2] = {sommet, '\0'};
+                if (!ajouter_texte(postfixe, taille, &position, texte)) {
+                    fprintf(stderr, "Erreur : expression trop longue.\n");
+                    return 0;
+                }
+            }
+
+            if (pile_vide(&pile)) {
+                fprintf(stderr, "Erreur : parenthèse fermante sans parenthèse ouvrante.\n");
+                return 0;
+            }
+            pile_depiler(&pile); /* retire '(' */
+            attend_operande = 0;
+            continue;
+        }
+
         if (jeton.type == TOKEN_PLUS || jeton.type == TOKEN_MINUS ||
             jeton.type == TOKEN_STAR || jeton.type == TOKEN_SLASH) {
+
+            /* Moins unaire : -3, 2 * -3, (-3 + 4). */
+            if (attend_operande && jeton.type == TOKEN_MINUS) {
+                if (!pile_pousser(&pile, 'u')) {
+                    fprintf(stderr, "Erreur : pile d'opérateurs saturée.\n");
+                    return 0;
+                }
+                continue;
+            }
+
+            /* Plus unaire : +3 est équivalent à 3. */
+            if (attend_operande && jeton.type == TOKEN_PLUS) {
+                continue;
+            }
+
             if (attend_operande) {
                 fprintf(stderr, "Erreur : opérateur mal placé.\n");
                 return 0;
             }
 
             const char operation = jeton.text[0];
-            while (!pile_vide(&pile) && priorite(pile_sommet(&pile)) >= priorite(operation)) {
+            while (!pile_vide(&pile) &&
+                   pile_sommet(&pile) != '(' &&
+                   priorite(pile_sommet(&pile)) >= priorite(operation)) {
                 const char sommet = pile_depiler(&pile);
                 char texte[2] = {sommet, '\0'};
                 if (!ajouter_texte(postfixe, taille, &position, texte)) {
@@ -142,6 +198,10 @@ int infix_to_postfix(const char *infixe, char *postfixe, size_t taille)
 
     while (!pile_vide(&pile)) {
         const char sommet = pile_depiler(&pile);
+        if (sommet == '(') {
+            fprintf(stderr, "Erreur : parenthèse ouvrante non fermée.\n");
+            return 0;
+        }
         char texte[2] = {sommet, '\0'};
         if (!ajouter_texte(postfixe, taille, &position, texte)) {
             fprintf(stderr, "Erreur : expression trop longue.\n");
