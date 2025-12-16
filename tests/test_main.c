@@ -54,12 +54,14 @@ void test_verifier_chaine(const char *fichier, int ligne, const char *texte,
 void test_lexer(void);
 void test_parseur(void);
 void test_evaluation(void);
+void test_postfixe(void);
 
 int main(void)
 {
     test_lexer();
     test_parseur();
     test_evaluation();
+    test_postfixe();
 
     printf("\n%d vérification(s), %d échec(s).\n", tests_executes, tests_echoues);
     return tests_echoues == 0 ? 0 : 1;

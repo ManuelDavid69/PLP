@@ -3,8 +3,8 @@ CFLAGS  ?= -std=c11 -Wall -Wextra -Wpedantic -O2 -Werror
 CPPFLAGS ?= -I../interpreteur/src
 
 BUILD   := ../build/tests
-TEST_SRC := test_main.c test_lexer.c test_parseur.c test_evaluation.c
-LIB_SRC  := ../interpreteur/src/lexer.c ../interpreteur/src/parseur.c ../interpreteur/src/evaluation.c
+TEST_SRC := test_main.c test_lexer.c test_parseur.c test_evaluation.c test_postfixe.c
+LIB_SRC  := ../interpreteur/src/lexer.c ../interpreteur/src/parseur.c ../interpreteur/src/evaluation.c ../interpreteur/src/postfixe.c
 
 TEST_OBJ := $(patsubst %.c,$(BUILD)/%.o,$(notdir $(TEST_SRC)))
 LIB_OBJ  := $(patsubst ../interpreteur/src/%.c,$(BUILD)/%.o,$(LIB_SRC))
