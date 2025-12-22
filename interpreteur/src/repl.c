@@ -5,12 +5,13 @@
 #include <time.h>
 
 #include "postfixe.h"
+#include "symboles.h"
 
 /**
- * Interpréteur de commandes — TP3 et TP4.
+ * Interpréteur de commandes — TP3, TP4 et TP5.
  *
- * Le REPL gère les commandes de base, puis évalue les expressions
- * arithmétiques complètes grâce à la conversion infixe → postfixée.
+ * Le REPL gère les commandes de base, les variables typées et les
+ * expressions arithmétiques complètes.
  */
 
 static int programme_en_cours = 1;
@@ -71,6 +72,8 @@ static void afficher_aide(const char *arguments)
     printf("  version           affiche la version de l'interpréteur\n");
     printf("  help / aide       affiche cette aide\n");
     printf("  quit / quitter    quitte l'interpréteur\n");
+    printf("  x = valeur        affecte une valeur à une variable typée\n");
+    printf("  x                 affiche la valeur d'une variable\n");
     printf("  <expression>      évalue une expression, par exemple (3 + 4) * 5\n");
 }
 
@@ -160,6 +163,21 @@ static void interpreter_ligne(const char *ligne)
         }
     }
 
+    if (symboles_est_affectation(copie)) {
+        symboles_traiter_affectation(copie);
+        return;
+    }
+
+    if (symboles_est_nom(copie)) {
+        Variable *variable = symboles_chercher(copie);
+        if (variable == NULL) {
+            printf("Erreur : la variable %s n'est pas définie\n", copie);
+        } else {
+            symboles_afficher(variable);
+        }
+        return;
+    }
+
     if (is_arithmetic_expression(copie)) {
         double resultat;
         if (evaluate_infix(copie, &resultat)) {
@@ -173,6 +191,7 @@ static void interpreter_ligne(const char *ligne)
 
 int main(void)
 {
+    symboles_init();
     printf("Interpréteur PLP 1.0 — tapez 'help' ou 'aide'.\n");
 
     while (programme_en_cours) {
