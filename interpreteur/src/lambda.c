@@ -86,7 +86,7 @@ int is_lambda_expression(const char *ligne)
     }
     curseur += 6;
 
-    return strchr(curseur, '.') != NULL && strchr(curseur, ')') != NULL;
+    return strchr(curseur, '.') != NULL;
 }
 
 int eval_lambda_expression(const char *ligne, double *resultat)

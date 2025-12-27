@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "lambda.h"
 #include "postfixe.h"
 #include "symboles.h"
 
@@ -75,6 +76,7 @@ static void afficher_aide(const char *arguments)
     printf("  x = valeur        affecte une valeur à une variable typée\n");
     printf("  x                 affiche la valeur d'une variable\n");
     printf("  <expression>      évalue une expression, par exemple (3 + 4) * 5\n");
+    printf("  (lambda x.expr) v applique une fonction anonyme à une valeur\n");
 }
 
 static void traiter_date(const char *arguments)
@@ -161,6 +163,14 @@ static void interpreter_ligne(const char *ligne)
             COMMANDES[c].fonction(curseur);
             return;
         }
+    }
+
+    if (is_lambda_expression(copie)) {
+        double resultat;
+        if (eval_lambda_expression(copie, &resultat)) {
+            afficher_nombre(resultat);
+        }
+        return;
     }
 
     if (symboles_est_affectation(copie)) {
