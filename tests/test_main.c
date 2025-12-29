@@ -55,6 +55,8 @@ void test_lexer(void);
 void test_parseur(void);
 void test_evaluation(void);
 void test_postfixe(void);
+void test_symboles(void);
+void test_lambda(void);
 
 int main(void)
 {
@@ -62,6 +64,8 @@ int main(void)
     test_parseur();
     test_evaluation();
     test_postfixe();
+    test_symboles();
+    test_lambda();
 
     printf("\n%d vérification(s), %d échec(s).\n", tests_executes, tests_echoues);
     return tests_echoues == 0 ? 0 : 1;
