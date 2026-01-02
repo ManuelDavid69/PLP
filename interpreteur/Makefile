@@ -5,9 +5,9 @@
 #   make debug    compile avec les informations de débogage pour gdb (-ggdb3, sans optimisation)
 #   make clean    supprime les fichiers objets et l'exécutable
 
-CC      = gcc
-CFLAGS  = -Wall -Wextra -O2
-LDLIBS  = -lm
+CC      ?= cc
+CFLAGS  ?= -std=c11 -Wall -Wextra -Wpedantic -O2
+LDLIBS  ?= -lm
 
 SRC     = $(wildcard src/*.c)
 OBJ     = $(SRC:.c=.o)
@@ -26,7 +26,7 @@ src/%.o: src/%.c $(wildcard src/*.h)
 run: $(EXEC)
 	./$(EXEC)
 
-debug: CFLAGS = -Wall -Wextra -ggdb3 -O0
+debug: CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -ggdb3 -O0
 debug: clean $(EXEC)
 
 clean:
