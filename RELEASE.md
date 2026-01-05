@@ -1,21 +1,21 @@
-# v1.0
-===============================================================================
-## Sujets de travaux - Principes des Langages de Programmation
+# Notes de version
 
-**Année**: 2024-2025 
+## v1.0 — Travaux pratiques TP1 à TP5
 
-### Objectives
-- Introduction (interesting properties)
-- Data types and structures (basic types + complex types)
-- Typing (static and dynamic typing, weak and strong typing)
-- Paradigms (string manipulation languages, imperative, procedural, functional, object-oriented, multi-paradigm)
-- Compiler chain (e.g. C)
-- Compilers and interpreters
+Projet réalisé dans le cadre du cours de **Principes des Langages de Programmation** (CPE Lyon).
 
-### Commit
-- Update exercises of practicals - TP1, TP2, TP3, TP4 and TP5
-- Update description of gdb
-- Add basic code and empty files
-- Add summary exercise
-- Update links
-- Initial commit
+### Contenu
+
+- TP1 : neuf programmes C sur les types, les opérateurs, les boucles et le binaire.
+- TP2 : débogage GDB, chaîne de compilation, chaînes, structures, fichiers et synthèse.
+- TP3 : interpréteur de commandes, lexer, parseur et évaluateur simple.
+- TP4 : conversion infixe → postfixée, parenthèses, moins unaire et évaluation par pile.
+- TP5 : table de symboles typée, variables UTF-8 et expressions lambda.
+- Tests unitaires, tests de sortie, Makefiles et intégration continue GitHub Actions.
+
+### Origine
+
+Le squelette, les énoncés et les interfaces proviennent du dépôt
+[`johnsamuelwrites/PLP`](https://github.com/johnsamuelwrites/PLP) de John Samuel.
+L'implémentation, les tests et la documentation de ce dépôt ont été réalisés par
+[ManuelDavid69](https://github.com/ManuelDavid69).
