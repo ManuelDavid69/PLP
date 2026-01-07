@@ -66,6 +66,10 @@ Erreur : changement de type non autorisé pour la variable x
 Les noms sont comparés octet par octet : les noms UTF-8 comme `π` fonctionnent sans traitement
 particulier.
 
+Dans le REPL final, un mot seul qui n'est pas une commande connue est traité comme un nom de
+variable : `foo` affiche donc « la variable foo n'est pas définie » plutôt que « commande
+inconnue ».
+
 ## 2. Expressions lambda
 
 ### Syntaxe

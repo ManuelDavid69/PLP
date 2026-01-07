@@ -25,6 +25,10 @@ stdin ──► repl.c ──► COMMANDES[] ──► echo / help / version / d
 5. sinon tente d'évaluer une expression simple ;
 6. sinon affiche un message d'erreur explicite.
 
+À l'issue du TP5, l'aiguillage final est : commandes connues, lambda, affectation,
+lecture de variable, expression arithmétique, puis message d'erreur. Un mot seul qui n'est
+pas une commande est donc interprété comme un nom de variable.
+
 ## 2. Table de commandes
 
 ```c
